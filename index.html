@@ -231,7 +231,6 @@
   const shellCountDisplay = document.getElementById('shell-count');
   const colorNameDisplay = document.getElementById('color-name');
   const colorSelectionContainer = document.getElementById('color-selection');
-  // Farben inklusive neu ergänzte Farben
   const colors = ['pink', 'black', 'lightblue', 'darkblue', 'white', 'peachpuff', 'plum', 'indigo'];
 
   const canvasWidth = canvas.width;
@@ -370,9 +369,9 @@
           ctx.fillStyle = color;
           ctx.beginPath();
           if(typeof ctx.roundRect === 'function'){
-            ctx.roundRect(drawX, drawY, 10, 10, 5);
+            ctx.roundRect(drawX, drawY, currentShellSize, currentShellSize, currentShellSize/2);
           } else {
-            ctx.rect(drawX, drawY, 10, 10);
+            ctx.rect(drawX, drawY, currentShellSize, currentShellSize);
           }
           ctx.fill();
         }
@@ -388,6 +387,21 @@
     if(infoDisplay){
       infoDisplay.textContent = 'Verbindung getrennt';
     }
+  });
+
+  // Shell size - responsive: größer auf small devices
+  let currentShellSize = 10;
+  function updateShellSize(){
+    if(window.innerWidth <= 640){
+      currentShellSize = 18;  // größer auf Handy
+    } else {
+      currentShellSize = 10;  // Standard Größe auf Laptop/PC
+    }
+  }
+  updateShellSize();
+
+  window.addEventListener('resize', () => {
+    updateShellSize();
   });
 
   function getCanvasCoordinates(e) {
@@ -418,7 +432,7 @@
     }
     const pos = getCanvasCoordinates(e);
 
-    const size = 10;
+    const size = currentShellSize;
     const x = pos.x - size/2;
     const y = pos.y - size/2;
 
