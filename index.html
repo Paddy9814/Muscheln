@@ -184,12 +184,26 @@
     let shellCount = 0;
     let clientId = null;
     let clientCount = 0;
-    // Versuche Farbe aus localStorage zu laden
-    let playerColor = localStorage.getItem('playerColor');
-    if(playerColor && !playerColors.includes(playerColor)){
-      // Falls gespeichert, aber unerlaubt, verwerfe
-      playerColor = null;
-      localStorage.removeItem('playerColor');
+    let playerColor = null;
+
+    // Funktion: Einfacher Hash der clientId (string) in Zahl
+    function hashString(str) {
+      let hash = 0;
+      for(let i=0; i<str.length; i++){
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0; // in 32bit int konvertieren
+      }
+      return Math.abs(hash);
+    }
+
+    // Farbe anhand clientId hash deterministisch auswählen
+    function assignColorByClientId(){
+      if(clientId){
+        const hash = hashString(clientId);
+        const index = hash % playerColors.length;
+        playerColor = playerColors[index];
+        updatePlayerColorDisplay();
+      }
     }
 
     // Zeigt Spielerzähler und Muschelzähler
@@ -208,21 +222,6 @@
         colorNameDisplay.style.padding = '0.3em 0.8em';
         colorNameDisplay.style.borderRadius = '12px';
         colorNameDisplay.style.fontWeight = '700';
-      }
-    }
-
-    // Farbe nur neu vergeben wenn keine gespeichert ist
-    function assignColorIfReady(){
-      if(!playerColor && clientCount > 0){
-        // Wähle Farbe basierend auf clientCount - 1 mod colors.length
-        // Achtung: ohne Server-Tracking kann Farbe kollidieren, aber so ca. verteilt
-        const index = (clientCount - 1) % playerColors.length;
-        playerColor = playerColors[index];
-        localStorage.setItem('playerColor', playerColor);
-        updatePlayerColorDisplay();
-      } else {
-        // Farbe aus localStorage anzeigen, falls vorhanden
-        updatePlayerColorDisplay();
       }
     }
 
@@ -254,13 +253,12 @@
       switch(type){
         case '*client-id*':
           clientId = incoming[1];
-          assignColorIfReady();
+          assignColorByClientId();
           break;
 
         case '*client-count*':
           clientCount = incoming[1];
           updateCounters();
-          assignColorIfReady();
           break;
 
         case 'draw-shell':
@@ -320,10 +318,6 @@
       updateCounters();
     });
 
-    // Beim Laden des Skripts die Farbe anzeigen, falls sie schon da ist
-    if(playerColor){
-      updatePlayerColorDisplay();
-    }
   })();
 </script>
 </body>
