@@ -55,12 +55,12 @@
     box-shadow: 0 0 28px rgba(0,0,0,0.22);
     cursor: pointer;
     display: block;
-    width: 720px; /* Etwas kleiner als vorher */
-    height: 540px;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    aspect-ratio: 4 / 3; /* Breiter und dafür proportional kürzer */
     border-radius: 16px;
     flex-shrink: 0;
-    max-width: 100%;
-    height: auto;
   }
 
   /* Textfeld Farbanzeige */
@@ -170,7 +170,7 @@
     background-color: pink;
     color: #333;
     border: none;
-    padding: 10px 20px;
+    padding: 10px 28px; /* Innenabstand erhöht für mehr Luft */
     font-size: 0.9rem;
     border-radius: 10px;
     cursor: pointer;
@@ -187,7 +187,6 @@
 
   /* Responsive */
   @media (max-width: 1024px) {
-    /* Layout anpassen: Header / Canvas schmaler */
     .header-canvas-container {
       flex-direction: column;
       align-items: center;
@@ -232,6 +231,8 @@
       width: 100%;
       padding: 0 10px;
       gap: 12px;
+      flex-direction: column;
+      align-items: stretch;
     }
     #info-display {
       flex-direction: row;
@@ -245,10 +246,12 @@
       max-width: 260px;
       padding: 10px 0;
       font-size: 1rem;
+      align-self: center;
+      box-sizing: border-box;
     }
   }
 
-  /* Desktop / Laptop - Kasten unten, alles kompakt */
+  /* Desktop / Laptop - alles untereinander */
   @media (min-width: 1025px) {
     #player-color-display {
       max-width: 600px;
@@ -256,9 +259,9 @@
     }
 
     .header-canvas-container {
-      flex-direction: column; /* zurück zu vertikal (Kasten unter Canvas) */
+      flex-direction: column; /* alles untereinander */
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       width: 900px;
       max-width: 100%;
       padding: 0 10px;
@@ -266,10 +269,11 @@
     }
 
     canvas#canvas {
-      width: 720px;
-      height: 540px;
+      width: 800px; /* etwas breiter gemacht */
+      height: auto;
+      aspect-ratio: 4 / 3;
       max-width: 100%;
-      max-height: 540px;
+      border-radius: 16px;
     }
 
     #player-color-display {
@@ -285,10 +289,10 @@
       width: 900px;
       max-width: 100%;
       display: flex;
-      flex-direction: row;
-      justify-content: space-between;
+      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      gap: 16px;
+      gap: 10px;
       padding: 0 10px;
       box-sizing: border-box;
       margin-bottom: 8px;
@@ -299,12 +303,15 @@
       gap: 10px;
       flex-wrap: nowrap;
       align-items: center;
+      justify-content: center;
     }
 
     button#clear-btn {
-      width: 160px;
-      padding: 10px 20px;
-      font-size: 0.95rem;
+      width: 180px;
+      padding: 10px 28px; /* mehr Innenabstand */
+      font-size: 1rem;
+      align-self: center;
+      box-sizing: border-box;
     }
   }
 </style>
