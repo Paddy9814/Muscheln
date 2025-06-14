@@ -202,15 +202,10 @@
         colorNameDisplay.style.padding = '0.3em 0.8em';
         colorNameDisplay.style.borderRadius = '12px';
         colorNameDisplay.style.fontWeight = '700';
-      } else if(colorNameDisplay){
-        colorNameDisplay.textContent = '...';
-        colorNameDisplay.style.backgroundColor = 'transparent';
-        colorNameDisplay.style.color = '#333';
-        colorNameDisplay.style.padding = '';
       }
     }
 
-    // Farbe zuweisen basierend auf clientCount und clientId - nur einmal pro Client
+    // Farbe zuweisen basierend auf clientCount - nur einmal pro Client
     function assignColorIfReady(){
       if(clientId && clientCount && !playerColor){
         const index = (clientCount - 1) % playerColors.length;
@@ -259,7 +254,7 @@
         case 'draw-shell':
           {
             const [_, drawX, drawY, color] = incoming;
-            ctx.fillStyle = color;
+            ctx.fillStyle = color; // Verwende die Farbe, die vom Server gesendet wird
             ctx.beginPath();
             if(typeof ctx.roundRect === 'function'){
               ctx.roundRect(drawX, drawY, 10, 10, 5);
@@ -292,7 +287,7 @@
       const x = clickX - size/2;
       const y = clickY - size/2;
 
-      ctx.fillStyle = playerColor || 'pink';
+      ctx.fillStyle = playerColor || 'pink'; // Verwende die Spielerfarbe
       ctx.beginPath();
       if(typeof ctx.roundRect === 'function'){
         ctx.roundRect(x, y, size, size, size/2);
@@ -304,6 +299,7 @@
       shellCount++;
       updateCounters();
 
+      // Sende die Farbe des Spielers mit
       socket.send(JSON.stringify(['*broadcast-message*', ['draw-shell', x, y, playerColor]]));
     });
 
@@ -316,4 +312,3 @@
 </script>
 </body>
 </html>
-
