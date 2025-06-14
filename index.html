@@ -53,9 +53,10 @@
     box-shadow: 0 0 28px rgba(0,0,0,0.22);
     cursor: pointer;
     display: block;
-    width: 900px;
+    width: 100%;
+    max-width: 900px;
     height: auto;
-    aspect-ratio: 4 / 3; /* Für proportional korrekte Darstellung (angepasst auf 4:3) */
+    aspect-ratio: 4 / 3; /* Korrigierte proportionale Fläche */
     border-radius: 16px;
     flex-shrink: 0;
   }
@@ -173,7 +174,9 @@
     width: 160px;
     max-width: 100%;
     box-sizing: border-box;
-    align-self: center; /* Damit auf Handy mittig */
+    align-self: center; /* fixiert mittig auf allen Geräten */
+    margin-left: auto;
+    margin-right: auto;
   }
   button#clear-btn:hover {
     background-color: #ffb6c1;
@@ -243,6 +246,8 @@
       font-size: 1rem;
       align-self: center;
       box-sizing: border-box;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 
@@ -265,7 +270,7 @@
     canvas#canvas {
       width: 900px;
       height: auto;
-      aspect-ratio: 16 / 9;
+      aspect-ratio: 4 / 3; /* korrigiert für stabile Punkte-Proportion */
       max-width: 100%;
       border-radius: 16px;
     }
@@ -306,6 +311,8 @@
       font-size: 1rem;
       align-self: center;
       box-sizing: border-box;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 </style>
@@ -580,4 +587,3 @@
 </script>
 </body>
 </html>
-
