@@ -186,33 +186,13 @@
     let clientCount = 0;
     let playerColor = null;
 
-    // Funktion: Einfacher Hash der clientId (string) in Zahl
-    function hashString(str) {
-      let hash = 0;
-      for(let i=0; i<str.length; i++){
-        hash = ((hash << 5) - hash) + str.charCodeAt(i);
-        hash |= 0; // in 32bit int konvertieren
-      }
-      return Math.abs(hash);
-    }
-
-    // Farbe anhand clientId hash deterministisch auswählen
-    function assignColorByClientId(){
-      if(clientId){
-        const hash = hashString(clientId);
-        const index = hash % playerColors.length;
-        playerColor = playerColors[index];
-        updatePlayerColorDisplay();
-      }
-    }
-
     // Zeigt Spielerzähler und Muschelzähler
     function updateCounters(){
       playerCountDisplay.textContent = `Spieler: ${clientCount}`;
       shellCountDisplay.textContent = `Muscheln: ${shellCount}`;
     }
 
-    // Zeigt dem Spieler seine Farbe an
+    // Zeigt dem Spieler seine Farbe an im Textfeld
     function updatePlayerColorDisplay(){
       if(colorNameDisplay && playerColor){
         colorNameDisplay.textContent = playerColor;
@@ -222,6 +202,20 @@
         colorNameDisplay.style.padding = '0.3em 0.8em';
         colorNameDisplay.style.borderRadius = '12px';
         colorNameDisplay.style.fontWeight = '700';
+      } else if(colorNameDisplay){
+        colorNameDisplay.textContent = '...';
+        colorNameDisplay.style.backgroundColor = 'transparent';
+        colorNameDisplay.style.color = '#333';
+        colorNameDisplay.style.padding = '';
+      }
+    }
+
+    // Farbe zuweisen basierend auf clientCount und clientId - nur einmal pro Client
+    function assignColorIfReady(){
+      if(clientId && clientCount && !playerColor){
+        const index = (clientCount - 1) % playerColors.length;
+        playerColor = playerColors[index];
+        updatePlayerColorDisplay();
       }
     }
 
@@ -253,12 +247,13 @@
       switch(type){
         case '*client-id*':
           clientId = incoming[1];
-          assignColorByClientId();
+          assignColorIfReady();
           break;
 
         case '*client-count*':
           clientCount = incoming[1];
           updateCounters();
+          assignColorIfReady();
           break;
 
         case 'draw-shell':
@@ -317,7 +312,6 @@
       shellCount = 0;
       updateCounters();
     });
-
   })();
 </script>
 </body>
