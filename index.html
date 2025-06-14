@@ -28,19 +28,18 @@
   h1#title-display {
     margin-bottom: 16px;
     font-weight: 900;
-    font-size: 1.6rem; /* Noch kleiner gemacht */
+    font-size: 1.6rem;
     user-select: none;
     text-align: center;
     max-width: 100%;
     padding: 0 10px;
   }
 
-  /* Container für Überschrift, Canvas und Text nebeneinander */
   .header-canvas-container {
     width: 900px;
     max-width: 100%;
     display: flex;
-    flex-direction: column; /* Laptop unten – siehe Media Query */
+    flex-direction: column;
     align-items: center;
     gap: 16px;
     margin-bottom: 24px;
@@ -48,28 +47,26 @@
     box-sizing: border-box;
   }
 
-  /* Canvas fixiert, zentriert und mit fester Größe */
   canvas#canvas {
-    background-color: #f1e8d6; /* helleres Beige - leichter Sandton */
+    background-color: #f1e8d6;
     border: 3px solid #fff;
     box-shadow: 0 0 28px rgba(0,0,0,0.22);
     cursor: pointer;
     display: block;
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     height: auto;
-    aspect-ratio: 4 / 3; /* Breiter und dafür proportional kürzer */
+    aspect-ratio: 16 / 9; /* Breiter und kürzer für Laptop */
     border-radius: 16px;
     flex-shrink: 0;
   }
 
-  /* Textfeld Farbanzeige */
   #player-color-display {
     background-color: #dffff8;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     color: #333;
-    font-size: 1rem; /* Leicht kleiner */
+    font-size: 1rem;
     font-weight: 600;
     padding: 0.6em 1em;
     min-width: 140px;
@@ -92,7 +89,6 @@
     word-break: break-word;
   }
 
-  /* Farbauswahl Buttons */
   #color-selection {
     margin-top: 1em;
     display: flex;
@@ -132,7 +128,6 @@
     cursor: not-allowed;
   }
 
-  /* Container für Zähler und Button */
   #info-controls-container {
     width: 900px;
     max-width: 100%;
@@ -144,7 +139,6 @@
     box-sizing: border-box;
   }
 
-  /* Anzeige Spieler & Muscheln nebeneinander mit Trennstrich */
   #info-display {
     font-size: 1rem;
     color: #333;
@@ -170,7 +164,7 @@
     background-color: pink;
     color: #333;
     border: none;
-    padding: 10px 28px; /* Innenabstand erhöht für mehr Luft */
+    padding: 10px 28px;
     font-size: 0.9rem;
     border-radius: 10px;
     cursor: pointer;
@@ -179,13 +173,13 @@
     user-select: none;
     width: 160px;
     max-width: 100%;
+    box-sizing: border-box;
   }
   button#clear-btn:hover {
     background-color: #ffb6c1;
     transform: scale(1.05);
   }
 
-  /* Responsive */
   @media (max-width: 1024px) {
     .header-canvas-container {
       flex-direction: column;
@@ -200,6 +194,7 @@
       height: auto !important;
       max-height: 380px;
       object-fit: contain;
+      aspect-ratio: 4 / 3;
     }
     #player-color-display {
       min-width: auto;
@@ -251,7 +246,6 @@
     }
   }
 
-  /* Desktop / Laptop - alles untereinander */
   @media (min-width: 1025px) {
     #player-color-display {
       max-width: 600px;
@@ -259,7 +253,7 @@
     }
 
     .header-canvas-container {
-      flex-direction: column; /* alles untereinander */
+      flex-direction: column;
       align-items: center;
       gap: 12px;
       width: 900px;
@@ -269,9 +263,9 @@
     }
 
     canvas#canvas {
-      width: 800px; /* etwas breiter gemacht */
+      width: 900px;
       height: auto;
-      aspect-ratio: 4 / 3;
+      aspect-ratio: 16 / 9;
       max-width: 100%;
       border-radius: 16px;
     }
@@ -308,7 +302,7 @@
 
     button#clear-btn {
       width: 180px;
-      padding: 10px 28px; /* mehr Innenabstand */
+      padding: 10px 32px;
       font-size: 1rem;
       align-self: center;
       box-sizing: border-box;
@@ -510,7 +504,6 @@
     }
   });
 
-  // Responsive muschelgröße
   let currentShellSize = 10;
   function updateShellSize(){
     if(window.innerWidth <= 640){
