@@ -63,16 +63,17 @@
     height: auto;
   }
 
-  /* Textfeld rechts neben Canvas */
+  /* Textfeld rechts neben Canvas, zentriert */
   #player-color-display {
     background-color: #dffff8;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     color: #333;
-    font-size: 1.2rem;
+    font-size: 1.1rem; /* kleiner für Laptop */
     font-weight: 600;
-    padding: 1em 1.5em;
-    min-width: 180px;
+    padding: 0.8em 1.2em; /* kompakter */
+    min-width: 140px; /* kleiner */
+    max-width: 180px;
     text-align: center;
     user-select: none;
     display: flex;
@@ -81,9 +82,9 @@
   }
   #player-color-display span#color-name {
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     margin-top: 0.25em;
-    padding: 0.25em 0.8em;
+    padding: 0.2em 0.6em;
     border-radius: 12px;
     box-shadow: inset 0 0 8px rgba(0,0,0,0.15);
   }
@@ -94,11 +95,11 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
   }
   #color-selection button {
-    width: 40px;
-    height: 40px;
+    width: 36px; /* etwas kleiner */
+    height: 36px;
     border-radius: 50%;
     border: 2px solid transparent;
     cursor: pointer;
@@ -125,11 +126,11 @@
   }
 
   #info-display {
-    font-size: 1.25rem;
+    font-size: 1.1rem; /* etwas kleiner */
     color: #333;
     user-select: none;
     display: flex;
-    gap: 1.5em;
+    gap: 1.2em; /* enger */
     justify-content: center;
     width: 100%;
     box-sizing: border-box;
@@ -145,14 +146,14 @@
     background-color: pink;
     color: #333;
     border: none;
-    padding: 12px 28px;
-    font-size: 1.1rem;
+    padding: 11px 24px; /* kompakter */
+    font-size: 1rem; /* kleiner */
     border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.11);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     transition: background-color 0.3s ease, transform 0.2s ease;
     user-select: none;
-    width: 200px;
+    width: 180px; /* etwas schmaler */
     max-width: 100%;
   }
   button#clear-btn:hover {
@@ -176,10 +177,16 @@
       width: 100%;
       font-size: 1rem;
       padding: 0.6em 1em;
+      max-width: none;
     }
     #player-color-display span#color-name {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       padding: 0.2em 0.6em;
+    }
+    #color-selection button {
+      width: 32px;
+      height: 32px;
+      border-width: 1.8px;
     }
     #info-controls-container {
       width: 100%;
@@ -187,11 +194,13 @@
     #info-display {
       flex-direction: column;
       gap: 8px;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
     button#clear-btn {
       width: 100%;
-      max-width: 300px;
+      max-width: 280px;
+      padding: 12px 0;
+      font-size: 1.1rem;
     }
   }
 </style>
@@ -389,20 +398,17 @@
     }
   });
 
-  // Shell size - responsive: größer auf small devices
+  // Muschelgröße responsive: größer auf kleinen Displays
   let currentShellSize = 10;
   function updateShellSize(){
     if(window.innerWidth <= 640){
-      currentShellSize = 18;  // größer auf Handy
+      currentShellSize = 18;
     } else {
-      currentShellSize = 10;  // Standard Größe auf Laptop/PC
+      currentShellSize = 10;
     }
   }
   updateShellSize();
-
-  window.addEventListener('resize', () => {
-    updateShellSize();
-  });
+  window.addEventListener('resize', updateShellSize);
 
   function getCanvasCoordinates(e) {
     const rect = canvas.getBoundingClientRect();
