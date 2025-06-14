@@ -168,12 +168,18 @@
       gap: 16px;
     }
     canvas#canvas {
-      width: 100%;
-      height: auto;
+      width: 100% !important;
+      height: auto !important;
     }
     #player-color-display {
       min-width: auto;
       width: 100%;
+      font-size: 1rem;
+      padding: 0.6em 1em;
+    }
+    #player-color-display span#color-name {
+      font-size: 1.1rem;
+      padding: 0.2em 0.6em;
     }
     #info-controls-container {
       width: 100%;
@@ -383,18 +389,40 @@
     }
   });
 
-  canvas.addEventListener('click', (e) => {
+  // Touch und Klick handler, berücksichtigt scroll & zoom:
+  function getCanvasCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if(e.touches && e.touches.length) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    // Berücksichtige das Verhältnis falls Canvas skaliert ist:
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+
+  function handleCanvasInput(e) {
+    e.preventDefault();
     if(!playerColor){
       alert('Bitte wähle zuerst eine Farbe!');
       return;
     }
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+
+    const pos = getCanvasCoordinates(e);
 
     const size = 10;
-    const x = clickX - size/2;
-    const y = clickY - size/2;
+    const x = pos.x - size/2;
+    const y = pos.y - size/2;
 
     ctx.fillStyle = playerColor;
     ctx.beginPath();
@@ -411,7 +439,10 @@
     if(socket.readyState === WebSocket.OPEN){
       socket.send(JSON.stringify(['*broadcast-message*', ['draw-shell', x, y, playerColor]]));
     }
-  });
+  }
+
+  canvas.addEventListener('click', handleCanvasInput);
+  canvas.addEventListener('touchstart', handleCanvasInput, {passive: false});
 
   clearBtn.addEventListener('click', () => {
     clearCanvas();
@@ -426,3 +457,4 @@
 </script>
 </body>
 </html>
+
