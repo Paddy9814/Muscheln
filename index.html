@@ -184,21 +184,26 @@
     let shellCount = 0;
     let clientId = null;
     let clientCount = 0;
-    let playerColor = null;
+    // Versuche Farbe aus localStorage zu laden
+    let playerColor = localStorage.getItem('playerColor');
+    if(playerColor && !playerColors.includes(playerColor)){
+      // Falls gespeichert, aber unerlaubt, verwerfe
+      playerColor = null;
+      localStorage.removeItem('playerColor');
+    }
 
     // Zeigt Spielerzähler und Muschelzähler
-    function updateCounters() {
+    function updateCounters(){
       playerCountDisplay.textContent = `Spieler: ${clientCount}`;
       shellCountDisplay.textContent = `Muscheln: ${shellCount}`;
     }
 
     // Zeigt dem Spieler seine Farbe an
-    function updatePlayerColorDisplay() {
-      if (colorNameDisplay && playerColor) {
+    function updatePlayerColorDisplay(){
+      if(colorNameDisplay && playerColor){
         colorNameDisplay.textContent = playerColor;
-        // Farbtext anpassen: dunkle Farbe → weißer Text, sonst schwarzer Text
-        colorNameDisplay.style.backgroundColor = playerColor;
         const darkColors = ['black', 'darkblue'];
+        colorNameDisplay.style.backgroundColor = playerColor;
         colorNameDisplay.style.color = darkColors.includes(playerColor.toLowerCase()) ? '#fff' : '#000';
         colorNameDisplay.style.padding = '0.3em 0.8em';
         colorNameDisplay.style.borderRadius = '12px';
@@ -206,17 +211,23 @@
       }
     }
 
-    // Vergibt Farbe bei Vorliegen von clientId und clientCount
-    function assignColorIfReady() {
-      if (clientId !== null && clientCount !== null) {
+    // Farbe nur neu vergeben wenn keine gespeichert ist
+    function assignColorIfReady(){
+      if(!playerColor && clientCount > 0){
+        // Wähle Farbe basierend auf clientCount - 1 mod colors.length
+        // Achtung: ohne Server-Tracking kann Farbe kollidieren, aber so ca. verteilt
         const index = (clientCount - 1) % playerColors.length;
         playerColor = playerColors[index];
+        localStorage.setItem('playerColor', playerColor);
+        updatePlayerColorDisplay();
+      } else {
+        // Farbe aus localStorage anzeigen, falls vorhanden
         updatePlayerColorDisplay();
       }
     }
 
     // Canvas initial füllen
-    function clearCanvas() {
+    function clearCanvas(){
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
@@ -230,16 +241,17 @@
     });
 
     socket.addEventListener('message', (event) => {
-      if (!event.data) return;
+      if(!event.data) return;
       let incoming;
       try {
         incoming = JSON.parse(event.data);
-      } catch {
+      } catch{
         return;
       }
+
       const type = incoming[0];
 
-      switch(type) {
+      switch(type){
         case '*client-id*':
           clientId = incoming[1];
           assignColorIfReady();
@@ -280,17 +292,17 @@
     // Klick auf Canvas - Muschel zeichnen und senden
     canvas.addEventListener('click', (e) => {
       const rect = canvas.getBoundingClientRect();
-      const clickX = (e.clientX - rect.left);
-      const clickY = (e.clientY - rect.top);
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
 
       const size = 10;
-      const x = clickX - size / 2;
-      const y = clickY - size / 2;
+      const x = clickX - size/2;
+      const y = clickY - size/2;
 
       ctx.fillStyle = playerColor || 'pink';
       ctx.beginPath();
       if(typeof ctx.roundRect === 'function'){
-        ctx.roundRect(x, y, size, size, size / 2);
+        ctx.roundRect(x, y, size, size, size/2);
       } else {
         ctx.rect(x, y, size, size);
       }
@@ -307,7 +319,13 @@
       shellCount = 0;
       updateCounters();
     });
+
+    // Beim Laden des Skripts die Farbe anzeigen, falls sie schon da ist
+    if(playerColor){
+      updatePlayerColorDisplay();
+    }
   })();
 </script>
 </body>
 </html>
+
