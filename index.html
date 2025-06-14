@@ -40,9 +40,9 @@
     width: 900px;
     max-width: 100%;
     display: flex;
-    align-items: center; /* vertikale Zentrierung */
-    justify-content: center;
-    gap: 24px;
+    flex-direction: column; /* Farbauswahl unter Farbtext */
+    align-items: center;
+    gap: 20px;
     margin-bottom: 24px;
     padding: 0 10px;
     box-sizing: border-box;
@@ -50,7 +50,7 @@
 
   /* Canvas fixiert, zentriert und mit fester Größe */
   canvas#canvas {
-    background-color: #f4e3c1;
+    background-color: #f1e8d6; /* helleres Beige - leichter Sandton */
     border: 3px solid #fff;
     box-shadow: 0 0 28px rgba(0,0,0,0.22);
     cursor: pointer;
@@ -58,21 +58,21 @@
     width: 800px;
     height: 600px;
     border-radius: 16px;
-    flex-shrink: 0; /* Prevent shrinking */
+    flex-shrink: 0;
     max-width: 100%;
     height: auto;
   }
 
-  /* Textfeld rechts neben Canvas, zentriert */
+  /* Textfeld Farbanzeige */
   #player-color-display {
     background-color: #dffff8;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     color: #333;
-    font-size: 1.1rem; /* kleiner für Laptop */
+    font-size: 1.1rem;
     font-weight: 600;
-    padding: 0.8em 1.2em; /* kompakter */
-    min-width: 140px; /* kleiner */
+    padding: 0.8em 1.2em;
+    min-width: 140px;
     max-width: 180px;
     text-align: center;
     user-select: none;
@@ -83,7 +83,7 @@
   #player-color-display span#color-name {
     font-weight: 700;
     font-size: 1.2rem;
-    margin-top: 0.25em;
+    margin-top: 0.2em;
     padding: 0.2em 0.6em;
     border-radius: 12px;
     box-shadow: inset 0 0 8px rgba(0,0,0,0.15);
@@ -93,17 +93,32 @@
   #color-selection {
     margin-top: 1em;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* auf Handy eine Reihe */
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #color-selection::-webkit-scrollbar {
+    height: 6px;
+  }
+  #color-selection::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #color-selection::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
   }
   #color-selection button {
-    width: 36px; /* etwas kleiner */
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
     border-radius: 50%;
     border: 2px solid transparent;
     cursor: pointer;
     transition: border-color 0.3s ease;
+    flex-shrink: 0;
   }
   #color-selection button.selected {
     border-color: #000;
@@ -126,11 +141,11 @@
   }
 
   #info-display {
-    font-size: 1.1rem; /* etwas kleiner */
+    font-size: 1.1rem;
     color: #333;
     user-select: none;
     display: flex;
-    gap: 1.2em; /* enger */
+    gap: 1.2em;
     justify-content: center;
     width: 100%;
     box-sizing: border-box;
@@ -146,14 +161,14 @@
     background-color: pink;
     color: #333;
     border: none;
-    padding: 11px 24px; /* kompakter */
-    font-size: 1rem; /* kleiner */
+    padding: 11px 24px;
+    font-size: 1rem;
     border-radius: 10px;
     cursor: pointer;
     box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     transition: background-color 0.3s ease, transform 0.2s ease;
     user-select: none;
-    width: 180px; /* etwas schmaler */
+    width: 180px;
     max-width: 100%;
   }
   button#clear-btn:hover {
@@ -183,9 +198,18 @@
       font-size: 1.05rem;
       padding: 0.2em 0.6em;
     }
+    #color-selection {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      gap: 6px;
+      margin-top: 0.5em;
+    }
     #color-selection button {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      min-height: 28px;
       border-width: 1.8px;
     }
     #info-controls-container {
@@ -240,11 +264,11 @@
   const shellCountDisplay = document.getElementById('shell-count');
   const colorNameDisplay = document.getElementById('color-name');
   const colorSelectionContainer = document.getElementById('color-selection');
-  const colors = ['pink', 'black', 'lightblue', 'darkblue', 'white', 'peachpuff', 'plum', 'indigo'];
+  const colors = ['#ff69b4', '#000000', '#add8e6', '#4a90e2', '#ffffff', '#ffdab9', '#dda0dd', '#663399'];
 
   const canvasWidth = canvas.width;
   const canvasHeight = canvas.height;
-  const backgroundColor = '#f4e3c1';
+  const backgroundColor = '#faedcd'; // Sandfarbe
 
   const webSocketServer = 'wss://nosch.uber.space/web-rooms/';
   const socket = new WebSocket(webSocketServer);
@@ -259,7 +283,7 @@
     if(colorNameDisplay){
       if(playerColor){
         colorNameDisplay.textContent = playerColor;
-        const darkColors = ['black', 'darkblue', 'indigo'];
+        const darkColors = ['black', '#6883c5', 'rebeccapurple'];
         colorNameDisplay.style.backgroundColor = playerColor;
         colorNameDisplay.style.color = darkColors.includes(playerColor.toLowerCase()) ? '#fff' : '#000';
         colorNameDisplay.style.padding = '0.3em 0.8em';
@@ -398,7 +422,7 @@
     }
   });
 
-  // Muschelgröße responsive: größer auf kleinen Displays
+  // Responsive muschelgröße
   let currentShellSize = 10;
   function updateShellSize(){
     if(window.innerWidth <= 640){
