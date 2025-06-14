@@ -73,7 +73,8 @@
     font-weight: 600;
     padding: 0.8em 1.2em;
     min-width: 140px;
-    max-width: 180px;
+    max-width: 100%;
+    width: auto;
     text-align: center;
     user-select: none;
     display: flex;
@@ -87,6 +88,8 @@
     padding: 0.2em 0.6em;
     border-radius: 12px;
     box-shadow: inset 0 0 8px rgba(0,0,0,0.15);
+    transition: color 0.3s ease, background-color 0.3s ease;
+    word-break: break-word;
   }
 
   /* Farbauswahl Buttons */
@@ -227,6 +230,14 @@
       font-size: 1.1rem;
     }
   }
+
+  /* Breiterer Kasten ab Desktopbreite für ausreichend Platz */
+  @media (min-width: 1025px) {
+    #player-color-display {
+      max-width: 600px; /* Breiter, aber nicht fix, kann je nach Inhalt wachsen */
+      width: auto;
+    }
+  }
 </style>
 </head>
 <body>
@@ -283,8 +294,10 @@
     if(colorNameDisplay){
       if(playerColor){
         colorNameDisplay.textContent = playerColor;
-        const darkColors = ['black', '#6883c5', 'rebeccapurple'];
+        // Liste von dunklen Farben für weiße Schrift
+        const darkColors = ['black', 'darkblue', 'indigo', 'plum', 'rebeccapurple'];
         colorNameDisplay.style.backgroundColor = playerColor;
+        // Verwende Kleinbuchstaben zum Vergleich für Robustheit
         colorNameDisplay.style.color = darkColors.includes(playerColor.toLowerCase()) ? '#fff' : '#000';
         colorNameDisplay.style.padding = '0.3em 0.8em';
         colorNameDisplay.style.borderRadius = '12px';
@@ -499,3 +512,4 @@
 </script>
 </body>
 </html>
+
