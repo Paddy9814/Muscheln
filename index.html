@@ -21,7 +21,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px 8px 32px;
+    padding: 16px 8px 48px; /* Mehr Padding unten für Abstand */
     min-height: 100vh;
   }
 
@@ -174,7 +174,7 @@
     width: 160px;
     max-width: 100%;
     box-sizing: border-box;
-    align-self: center; /* Button immer zentriert */
+    align-self: center;
     margin-left: auto;
     margin-right: auto;
   }
@@ -240,7 +240,7 @@
       flex-wrap: nowrap;
     }
     button#clear-btn {
-      width: 100%;
+      width: 160px;
       max-width: 260px;
       padding: 10px 0;
       font-size: 1rem;
@@ -248,6 +248,7 @@
       box-sizing: border-box;
       margin-left: auto;
       margin-right: auto;
+      display: block; /* wichtig für Zentrierung */
     }
   }
 
@@ -268,9 +269,9 @@
     }
 
     canvas#canvas {
-      width: 800px; /* Etwas schmaler als vorher */
+      width: 760px; /* etwas kleiner als 900, breiter und proportional kürzer */
       height: auto;
-      aspect-ratio: 4 / 3; /* Korrekte Proportion je nach ursprünglicher Canvas */
+      aspect-ratio: 4 / 3;
       max-width: 100%;
       border-radius: 16px;
     }
@@ -294,7 +295,7 @@
       gap: 10px;
       padding: 0 10px;
       box-sizing: border-box;
-      margin-bottom: 8px;
+      margin-bottom: 32px; /* mehr unten Abstand */
     }
 
     #info-display {
@@ -307,12 +308,13 @@
 
     button#clear-btn {
       width: 160px;
-      padding: 10px 32px; /* Etwas mehr padding für mehr Abstand zum Rand */
+      padding: 10px 32px;
       font-size: 1rem;
       align-self: center;
       box-sizing: border-box;
       margin-left: auto;
       margin-right: auto;
+      display: block; /* sicherstellen zentriert */
     }
   }
 </style>
