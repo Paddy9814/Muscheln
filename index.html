@@ -231,7 +231,8 @@
   const shellCountDisplay = document.getElementById('shell-count');
   const colorNameDisplay = document.getElementById('color-name');
   const colorSelectionContainer = document.getElementById('color-selection');
-  const colors = ['pink', 'black', 'lightblue', 'darkblue', 'white'];
+  // Farben inklusive neu ergänzte Farben
+  const colors = ['pink', 'black', 'lightblue', 'darkblue', 'white', 'peachpuff', 'plum', 'indigo'];
 
   const canvasWidth = canvas.width;
   const canvasHeight = canvas.height;
@@ -250,7 +251,7 @@
     if(colorNameDisplay){
       if(playerColor){
         colorNameDisplay.textContent = playerColor;
-        const darkColors = ['black', 'darkblue'];
+        const darkColors = ['black', 'darkblue', 'indigo'];
         colorNameDisplay.style.backgroundColor = playerColor;
         colorNameDisplay.style.color = darkColors.includes(playerColor.toLowerCase()) ? '#fff' : '#000';
         colorNameDisplay.style.padding = '0.3em 0.8em';
@@ -389,7 +390,6 @@
     }
   });
 
-  // Touch und Klick handler, berücksichtigt scroll & zoom:
   function getCanvasCoordinates(e) {
     const rect = canvas.getBoundingClientRect();
     let clientX, clientY;
@@ -401,7 +401,6 @@
       clientX = e.clientX;
       clientY = e.clientY;
     }
-    // Berücksichtige das Verhältnis falls Canvas skaliert ist:
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
@@ -417,7 +416,6 @@
       alert('Bitte wähle zuerst eine Farbe!');
       return;
     }
-
     const pos = getCanvasCoordinates(e);
 
     const size = 10;
@@ -457,4 +455,3 @@
 </script>
 </body>
 </html>
-
