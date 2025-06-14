@@ -28,7 +28,7 @@
   h1#title-display {
     margin-bottom: 24px;
     font-weight: 900;
-    font-size: 2.8rem;
+    font-size: 2rem; /* kleiner gemacht */
     user-select: none;
     text-align: center;
     max-width: 100%;
@@ -143,20 +143,25 @@
     box-sizing: border-box;
   }
 
+  /* Anzeige Spieler & Muscheln nebeneinander mit Trennstrich */
   #info-display {
     font-size: 1.1rem;
     color: #333;
     user-select: none;
     display: flex;
-    gap: 1.2em;
+    gap: 12px;
     justify-content: center;
     width: 100%;
     box-sizing: border-box;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    align-items: center;
   }
-
   #info-display span {
     margin: 0;
+  }
+  #info-display span.separator {
+    user-select: none;
+    pointer-events: none;
   }
 
   button#clear-btn {
@@ -181,14 +186,20 @@
 
   /* Responsive */
   @media (max-width: 1024px) {
+    /* Layout anpassen: Header und Canvas schmaler */
     .header-canvas-container {
       flex-direction: column;
       align-items: center;
       gap: 16px;
+      width: 100%;
+      max-width: 100%;
+      padding: 0 10px;
     }
     canvas#canvas {
       width: 100% !important;
       height: auto !important;
+      max-height: 420px; /* damit es nicht zu groß wird auf kleinen Geräten */
+      object-fit: contain;
     }
     #player-color-display {
       min-width: auto;
@@ -196,6 +207,7 @@
       font-size: 1rem;
       padding: 0.6em 1em;
       max-width: none;
+      margin-bottom: 8px;
     }
     #player-color-display span#color-name {
       font-size: 1.05rem;
@@ -217,11 +229,14 @@
     }
     #info-controls-container {
       width: 100%;
+      padding: 0 10px;
     }
     #info-display {
-      flex-direction: column;
+      flex-direction: row;
       gap: 8px;
       font-size: 1rem;
+      justify-content: center;
+      flex-wrap: nowrap;
     }
     button#clear-btn {
       width: 100%;
@@ -234,8 +249,65 @@
   /* Breiterer Kasten ab Desktopbreite für ausreichend Platz */
   @media (min-width: 1025px) {
     #player-color-display {
-      max-width: 600px; /* Breiter, aber nicht fix, kann je nach Inhalt wachsen */
+      max-width: 600px;
       width: auto;
+    }
+
+    /* Layout horizontaler anordnen für Laptop, damit alles auf eine Seite passt */
+    .header-canvas-container {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 30px;
+      width: 900px;
+      max-width: 100%;
+      padding: 0 10px;
+      margin-bottom: 16px;
+    }
+
+    /* Canvas etwas kleiner max Höhe und Breite, um Höhe zu reduzieren */
+    canvas#canvas {
+      width: 720px;
+      height: 540px;
+      max-width: 100%;
+      max-height: 540px;
+    }
+
+    /* Farbdisplay vertikal anordnen */
+    #player-color-display {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding-top: 12px;
+    }
+
+    /* Info Controls nebeneinander */
+    #info-controls-container {
+      width: 900px;
+      max-width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 0 10px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+
+    #info-display {
+      font-size: 1.2rem;
+      gap: 12px;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+
+    button#clear-btn {
+      width: 180px;
+      padding: 11px 24px;
+      font-size: 1rem;
     }
   }
 </style>
@@ -245,7 +317,7 @@
 
   <div class="header-canvas-container">
     <canvas id="canvas" width="800" height="600" aria-label="Spielfläche"></canvas>
-    <div id="player-color-display">
+    <div id="player-color-display" aria-live="polite" aria-atomic="true">
       Du bist Spieler:<br />
       <span id="color-name">...</span>
       <div id="color-selection-container" style="margin-top: 12px;">
@@ -255,9 +327,10 @@
     </div>
   </div>
 
-  <div id="info-controls-container">
-    <div id="info-display" aria-live="polite" aria-atomic="true">
+  <div id="info-controls-container" aria-label="Spielinformationen und Steuerung">
+    <div id="info-display" aria-live="polite" aria-atomic="true" role="status">
       <span id="player-count">Spieler: 0</span>
+      <span class="separator" aria-hidden="true">|</span>
       <span id="shell-count">Muscheln: 0</span>
     </div>
     <div class="controls">
@@ -297,7 +370,7 @@
         // Liste von dunklen Farben für weiße Schrift
         const darkColors = ['black', 'darkblue', 'indigo', 'plum', 'rebeccapurple'];
         colorNameDisplay.style.backgroundColor = playerColor;
-        // Verwende Kleinbuchstaben zum Vergleich für Robustheit
+        // Robustheit: Kleinbuchstaben
         colorNameDisplay.style.color = darkColors.includes(playerColor.toLowerCase()) ? '#fff' : '#000';
         colorNameDisplay.style.padding = '0.3em 0.8em';
         colorNameDisplay.style.borderRadius = '12px';
