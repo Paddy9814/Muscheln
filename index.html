@@ -39,7 +39,7 @@
     width: 100%;
     max-width: 900px;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: nowrap;
   }
 
@@ -52,7 +52,7 @@
     font-size: 1.2rem;
     font-weight: 600;
     padding: 1em 1.5em;
-    min-width: 160px;
+    min-width: 180px;
     text-align: center;
     user-select: none;
   }
@@ -66,6 +66,30 @@
     box-shadow: inset 0 0 8px rgba(0,0,0,0.15);
   }
 
+  /* Farbauswahl Buttons */
+  #color-selection {
+    margin-top: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  #color-selection button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+  }
+  #color-selection button.selected {
+    border-color: #000;
+  }
+  #color-selection button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
   /* Canvas Styling */
   canvas#canvas {
     background-color: #f4e3c1;
@@ -73,8 +97,8 @@
     box-shadow: 0 0 28px rgba(0,0,0,0.22);
     cursor: pointer;
     display: block;
-    max-width: 100%;
-    height: auto;
+    width: 800px;
+    height: 600px;
     border-radius: 16px;
   }
 
@@ -117,6 +141,7 @@
     .game-container {
       flex-direction: column;
       max-width: 100%;
+      align-items: center;
     }
     #player-color-display {
       min-width: auto;
@@ -125,10 +150,8 @@
       font-size: 1.1rem;
       padding: 0.6em 1em;
     }
-    #player-color-display span#color-name {
-      font-size: 1.2rem;
-      margin-top: 0.15em;
-      padding: 0.2em 0.6em;
+    #color-selection {
+      justify-content: center;
     }
     button#clear-btn {
       width: 100%;
@@ -149,6 +172,10 @@
     <div id="player-color-display">
       Du bist Spieler:<br />
       <span id="color-name">...</span>
+      <div id="color-selection-container" style="margin-top: 12px;">
+        <span style="display:block;margin-bottom:0.5em;font-weight:600;">Wähle deine Farbe:</span>
+        <div id="color-selection" role="list" aria-label="Farbauswahl"></div>
+      </div>
     </div>
     <canvas id="canvas" width="800" height="600" aria-label="Spielfläche"></canvas>
   </div>
@@ -163,151 +190,234 @@
   </div>
 
 <script>
-  (() => {
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const clearBtn = document.getElementById('clear-btn');
-    const infoDisplay = document.getElementById('info-display');
-    const playerCountDisplay = document.getElementById('player-count');
-    const shellCountDisplay = document.getElementById('shell-count');
-    const colorNameDisplay = document.getElementById('color-name');
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const clearBtn = document.getElementById('clear-btn');
+  const infoDisplay = document.getElementById('info-display');
+  const playerCountDisplay = document.getElementById('player-count');
+  const shellCountDisplay = document.getElementById('shell-count');
+  const colorNameDisplay = document.getElementById('color-name');
+  const colorSelectionContainer = document.getElementById('color-selection');
+  const colors = ['pink', 'black', 'lightblue', 'darkblue', 'white'];
 
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
-    const backgroundColor = '#f4e3c1';
+  const canvasWidth = canvas.width;
+  const canvasHeight = canvas.height;
+  const backgroundColor = '#f4e3c1';
 
-    const webSocketServer = 'wss://nosch.uber.space/web-rooms/';
-    const socket = new WebSocket(webSocketServer);
+  const webSocketServer = 'wss://nosch.uber.space/web-rooms/';
+  const socket = new WebSocket(webSocketServer);
 
-    const playerColors = ['pink', 'black', 'lightblue', 'darkblue', 'white'];
+  let shellCount = 0;
+  let clientId = null;
+  let clientCount = 0;
+  let playerColor = null;
+  let assignedColors = new Set();
 
-    let shellCount = 0;
-    let clientId = null;
-    let clientCount = 0;
-    let playerColor = null;
-
-    // Zeigt Spielerzähler und Muschelzähler
-    function updateCounters() {
-      playerCountDisplay.textContent = `Spieler: ${clientCount}`;
-      shellCountDisplay.textContent = `Muscheln: ${shellCount}`;
-    }
-
-    // Zeigt dem Spieler seine Farbe an
-    function updatePlayerColorDisplay() {
-      if (colorNameDisplay && playerColor) {
+  // Hilfsfunktion Farbe anzeigen
+  function updatePlayerColorDisplay(){
+    if(colorNameDisplay){
+      if(playerColor){
         colorNameDisplay.textContent = playerColor;
-        // Farbtext anpassen: dunkle Farbe → weißer Text, sonst schwarzer Text
-        colorNameDisplay.style.backgroundColor = playerColor;
         const darkColors = ['black', 'darkblue'];
+        colorNameDisplay.style.backgroundColor = playerColor;
         colorNameDisplay.style.color = darkColors.includes(playerColor.toLowerCase()) ? '#fff' : '#000';
         colorNameDisplay.style.padding = '0.3em 0.8em';
         colorNameDisplay.style.borderRadius = '12px';
         colorNameDisplay.style.fontWeight = '700';
-      }
-    }
-
-    // Vergibt Farbe bei Vorliegen von clientId und clientCount
-    function assignColorIfReady() {
-      if (clientId !== null && clientCount !== null) {
-        const index = (clientCount - 1) % playerColors.length;
-        playerColor = playerColors[index];
-        updatePlayerColorDisplay();
-      }
-    }
-
-    // Canvas initial füllen
-    function clearCanvas() {
-      ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    }
-    clearCanvas();
-
-    // WebSocket Events
-    socket.addEventListener('open', () => {
-      socket.send(JSON.stringify(['*enter-room*', 'muschelraum']));
-      socket.send(JSON.stringify(['*subscribe-client-count*']));
-      setInterval(() => socket.send(''), 30000);
-    });
-
-    socket.addEventListener('message', (event) => {
-      if (!event.data) return;
-      let incoming;
-      try {
-        incoming = JSON.parse(event.data);
-      } catch {
-        return;
-      }
-      const type = incoming[0];
-
-      switch(type) {
-        case '*client-id*':
-          clientId = incoming[1];
-          assignColorIfReady();
-          break;
-
-        case '*client-count*':
-          clientCount = incoming[1];
-          updateCounters();
-          assignColorIfReady();
-          break;
-
-        case 'draw-shell':
-          {
-            const [_, drawX, drawY, color] = incoming;
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            if(typeof ctx.roundRect === 'function'){
-              ctx.roundRect(drawX, drawY, 10, 10, 5);
-            } else {
-              ctx.rect(drawX, drawY, 10, 10);
-            }
-            ctx.fill();
-          }
-          break;
-
-        case '*error*':
-          console.warn('Server-Fehler:', ...incoming[1]);
-          break;
-      }
-    });
-
-    socket.addEventListener('close', () => {
-      if(infoDisplay){
-        infoDisplay.textContent = 'Verbindung getrennt';
-      }
-    });
-
-    // Klick auf Canvas - Muschel zeichnen und senden
-    canvas.addEventListener('click', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = (e.clientX - rect.left);
-      const clickY = (e.clientY - rect.top);
-
-      const size = 10;
-      const x = clickX - size / 2;
-      const y = clickY - size / 2;
-
-      ctx.fillStyle = playerColor || 'pink';
-      ctx.beginPath();
-      if(typeof ctx.roundRect === 'function'){
-        ctx.roundRect(x, y, size, size, size / 2);
       } else {
-        ctx.rect(x, y, size, size);
+        colorNameDisplay.textContent = '...';
+        colorNameDisplay.style.backgroundColor = 'transparent';
+        colorNameDisplay.style.color = '#333';
+        colorNameDisplay.style.padding = '';
       }
-      ctx.fill();
+    }
+  }
 
-      shellCount++;
-      updateCounters();
+  // Aktualisiere Spieler- und Muschelanzeige
+  function updateCounters(){
+    playerCountDisplay.textContent = `Spieler: ${clientCount}`;
+    shellCountDisplay.textContent = `Muscheln: ${shellCount}`;
+  }
 
+  // Canvas füllen
+  function clearCanvas(){
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0,0,canvasWidth,canvasHeight);
+  }
+
+  clearCanvas();
+
+  // Farbenliste für Auswahl rendern
+  function renderColorSelection(){
+    colorSelectionContainer.innerHTML = '';
+    colors.forEach(color => {
+      const button = document.createElement('button');
+      button.style.backgroundColor = color;
+      button.setAttribute('aria-label', `Wähle Farbe ${color}`);
+      button.type = 'button';
+
+      if(assignedColors.has(color)){
+        button.disabled = true;
+      }
+
+      if(color === playerColor){
+        button.classList.add('selected');
+      }
+
+      button.addEventListener('click', () => {
+        if(button.disabled) return;
+
+        // Wähle diese Farbe lokal und sende Auswahl an Server
+        if(playerColor !== color){
+          playerColor = color;
+          // Farbauswahl senden
+          if(socket.readyState === WebSocket.OPEN){
+            socket.send(JSON.stringify(['*color-selection*', playerColor]));
+          }
+          updatePlayerColorDisplay();
+          renderColorSelection();
+        }
+      });
+
+      colorSelectionContainer.appendChild(button);
+    });
+  }
+
+  // Aktualisiere belegte Farben und neu rendern
+  function updateAssignedColors(colorsArray){
+    assignedColors = new Set(colorsArray);
+    // Wenn aktuelle Farbe nun nicht mehr verfügbar ist, resetten
+    if(playerColor && assignedColors.has(playerColor) === false){
+      // Spielerfarbe frei geworden oder unklar, aber für Sicherheit nichts löschen
+    }
+    renderColorSelection();
+  }
+
+  // WebSocket - Verbindungs-Events & Nachrichten
+  socket.addEventListener('open', () => {
+    socket.send(JSON.stringify(['*enter-room*', 'muschelraum']));
+    socket.send(JSON.stringify(['*subscribe-client-count*']));
+    // Anfrage Farbenstand aller Spieler (wenn Server das unterstützt)
+    socket.send(JSON.stringify(['*request-color-status*']));
+    setInterval(() => socket.send(''), 30000);
+  });
+
+  socket.addEventListener('message', (event) => {
+    if(!event.data) return;
+    let incoming;
+    try {
+      incoming = JSON.parse(event.data);
+    } catch {
+      return;
+    }
+
+    const type = incoming[0];
+
+    switch(type){
+      case '*client-id*':
+        clientId = incoming[1];
+        // Spielerfarbe ev. setzen wenn schon gewählt
+        updatePlayerColorDisplay();
+        renderColorSelection();
+        break;
+
+      case '*client-count*':
+        clientCount = incoming[1];
+        updateCounters();
+        break;
+
+      case '*color-selection*':
+        {
+          // Beispiel Nachrichtenformat: ['*color-selection*', { clientId: 'id123', color: 'pink' }]
+          let selection = incoming[1];
+          if(typeof selection === 'object' && selection.color){
+            assignedColors.add(selection.color);
+            // Farbe aktualisieren bei Farbauswahl anderer Clients
+            renderColorSelection();
+          }
+        }
+        break;
+
+      case '*color-status*':
+        {
+          // Beispiel Nachrichtenformat: ['*color-status*', ['pink','black']]
+          let colorsTaken = incoming[1];
+          if(Array.isArray(colorsTaken)){
+            updateAssignedColors(colorsTaken);
+          }
+          renderColorSelection();
+        }
+        break;
+
+      case 'draw-shell':
+        {
+          const [_, drawX, drawY, color] = incoming;
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          if(typeof ctx.roundRect === 'function'){
+            ctx.roundRect(drawX, drawY, 10, 10, 5);
+          } else {
+            ctx.rect(drawX, drawY, 10, 10);
+          }
+          ctx.fill();
+        }
+        break;
+
+      case '*error*':
+        console.warn('Server-Fehler:', ...incoming[1]);
+        break;
+    }
+  });
+
+  socket.addEventListener('close', () => {
+    if(infoDisplay){
+      infoDisplay.textContent = 'Verbindung getrennt';
+    }
+  });
+
+  // Klick auf Canvas -> Muschel zeichnen und senden
+  canvas.addEventListener('click', (e) => {
+    if(!playerColor){
+      alert('Bitte wähle zuerst deine Farbe!');
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const size = 10;
+    const x = clickX - size/2;
+    const y = clickY - size/2;
+
+    ctx.fillStyle = playerColor;
+    ctx.beginPath();
+    if(typeof ctx.roundRect === 'function'){
+      ctx.roundRect(x, y, size, size, size/2);
+    } else {
+      ctx.rect(x, y, size, size);
+    }
+    ctx.fill();
+
+    shellCount++;
+    updateCounters();
+
+    if(socket.readyState === WebSocket.OPEN){
       socket.send(JSON.stringify(['*broadcast-message*', ['draw-shell', x, y, playerColor]]));
-    });
+    }
+  });
 
-    clearBtn.addEventListener('click', () => {
-      clearCanvas();
-      shellCount = 0;
-      updateCounters();
-    });
-  })();
+  clearBtn.addEventListener('click', () => {
+    clearCanvas();
+    shellCount = 0;
+    updateCounters();
+  });
+
+  // Initial UI Setup
+  updateCounters();
+  updatePlayerColorDisplay();
+  renderColorSelection();
+})();
 </script>
 </body>
 </html>
